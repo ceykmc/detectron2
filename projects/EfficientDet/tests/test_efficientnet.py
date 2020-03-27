@@ -45,8 +45,8 @@ class TestEfficientNet(parameterizedTestCase):
         print(torch.sum(image))
         with torch.no_grad():
             output_features = model(image)
-        for i, output_feature in enumerate(output_features):
-            print(F"{i}, {output_feature.shape}, {torch.sum(output_feature).item()}")
+        for k, output_feature in output_features.items():
+            print(F"{k}, {output_feature.shape}, {torch.sum(output_feature).item()}")
 
 
 def argument_parser():

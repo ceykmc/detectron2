@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from detectron2.config import CfgNode
-from detectron2.modeling import BACKBONE_REGISTRY
+from detectron2.modeling import Backbone
 
 from .utils import (
     MemoryEfficientSwish,
@@ -146,8 +146,7 @@ class MBConvBlock(nn.Module):
         self._swish = MemoryEfficientSwish() if memory_efficient else Swish()
 
 
-@BACKBONE_REGISTRY.register()
-class EfficientNet(nn.Module):
+class EfficientNet(Backbone):
     def __init__(self, cfg: CfgNode):
         super().__init__()
         blocks_args = self.read_blocks_args(cfg)
@@ -156,6 +155,7 @@ class EfficientNet(nn.Module):
         assert len(blocks_args) > 0, "block args must be greater than 0"
         self._global_params = global_params
         self._blocks_args = blocks_args
+        self._out_features = cfg.MODEL.EFFICIENTNET.OUT_FEATURES
 
         # Get static or dynamic convolution depending on image size
         Conv2d = get_same_padding_conv2d(image_size=global_params.image_size)
@@ -177,7 +177,12 @@ class EfficientNet(nn.Module):
                                    momentum=bn_mom,
                                    eps=bn_eps)
 
+        current_stride = 2
+        self._out_feature_strides = {"stem": current_stride}
+        self._out_feature_channels = {"stem": out_channels}
+
         # Build blocks
+        count = 0
         self._blocks = nn.ModuleList([])
         for block_args in self._blocks_args:
 
@@ -192,12 +197,24 @@ class EfficientNet(nn.Module):
 
             # The first block needs to take care of stride and filter size increase.
             self._blocks.append(MBConvBlock(block_args, self._global_params))
+
+            name = F"res{count}"
+            current_stride *= block_args.stride
+            self._out_feature_strides[name] = current_stride
+            self._out_feature_channels[name] = block_args.output_filters
+            count += 1
+
             if block_args.num_repeat > 1:
                 block_args = block_args._replace(
                     input_filters=block_args.output_filters, stride=1)
             for _ in range(block_args.num_repeat - 1):
                 self._blocks.append(
                     MBConvBlock(block_args, self._global_params))
+                name = F"res{count}"
+                current_stride *= block_args.stride
+                self._out_feature_strides[name] = current_stride
+                self._out_feature_channels[name] = block_args.output_filters
+                count += 1
 
         self._swish = MemoryEfficientSwish()
 
@@ -208,22 +225,22 @@ class EfficientNet(nn.Module):
             block.set_swish(memory_efficient)
 
     def extract_features(self, inputs):
-        output_features = list()
+        outputs = dict()
         # Stem
         x = self._swish(self._bn0(self._conv_stem(inputs)))
+        if "stem" in self._out_features:
+            outputs["stem"] = x
         # Blocks
-        stage_index, num_repeat = 0, 0
         for idx, block in enumerate(self._blocks):
+            name = F"res{idx}"
             drop_connect_rate = self._global_params.drop_connect_rate
             if drop_connect_rate:
                 drop_connect_rate *= float(idx) / len(self._blocks)
             x = block(x, drop_connect_rate=drop_connect_rate)
-            num_repeat += 1
-            if num_repeat == self._blocks_args[stage_index].num_repeat:
-                num_repeat = 0
-                stage_index += 1
-                output_features.append(x)
-        return output_features
+            if name in self._out_features:
+                outputs[name] = x
+            print(name)
+        return outputs
 
     @staticmethod
     def read_blocks_args(cfg: CfgNode):
