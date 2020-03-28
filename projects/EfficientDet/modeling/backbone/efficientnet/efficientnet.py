@@ -239,7 +239,6 @@ class EfficientNet(Backbone):
             x = block(x, drop_connect_rate=drop_connect_rate)
             if name in self._out_features:
                 outputs[name] = x
-            print(name)
         return outputs
 
     @staticmethod

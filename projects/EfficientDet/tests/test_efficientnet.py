@@ -27,22 +27,20 @@ class TestEfficientNet(parameterizedTestCase):
     def test_create_model(self):
         model = EfficientNet(self.cfg)
         check_point_file_path = \
-            R"C:\Users\xzy_lijun\.cache\torch\checkpoints\efficientnet-b0-355c32eb.pth"
+            R"C:\Users\lijun\.cache\torch\checkpoints\efficientnet-b0-355c32eb.pth"
         state_dict = torch.load(check_point_file_path)
         model.load_state_dict(state_dict, strict=False)
 
     def test_predict(self):
         model = EfficientNet(self.cfg)
         check_point_file_path = \
-            R"C:\Users\xzy_lijun\.cache\torch\checkpoints\efficientnet-b0-355c32eb.pth"
+            R"C:\Users\lijun\.cache\torch\checkpoints\efficientnet-b0-355c32eb.pth"
         state_dict = torch.load(check_point_file_path)
         model.load_state_dict(state_dict, strict=False)
         model.eval()
 
-        image_path = R"\\10.20.0.60\public_workspace\ImageNet\val\ILSVRC2012_val_00001981.JPEG"
+        image_path = R"D:\dataset\VOC\VOC2007\JPEGImages\000015.jpg"
         image = read_image(image_path, 512)
-        torch.save(image, "test_image.pth")
-        print(torch.sum(image))
         with torch.no_grad():
             output_features = model(image)
         for k, output_feature in output_features.items():
