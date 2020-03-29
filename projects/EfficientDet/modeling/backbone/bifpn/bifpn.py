@@ -67,7 +67,7 @@ class BiFPN(Backbone):
 
 
 @BACKBONE_REGISTRY.register()
-def build_retinanet_efficientnet_bifpn_backbone(cfg: CfgNode):
+def build_retinanet_efficientnet_bifpn_backbone(cfg: CfgNode, input_shape=None):
     bottom_up = EfficientNet(cfg)
 
     in_features = cfg.MODEL.BIFPN.IN_FEATURES

@@ -11,7 +11,6 @@ from detectron2.layers import ShapeSpec
 
 
 from .utils import (
-    MemoryEfficientSwish,
     Swish,
     drop_connect,
     get_same_padding_conv2d,
@@ -109,7 +108,7 @@ class MBConvBlock(nn.Module):
         self._bn2 = nn.BatchNorm2d(num_features=final_oup,
                                    momentum=self._bn_mom,
                                    eps=self._bn_eps)
-        self._swish = MemoryEfficientSwish()
+        self._swish = Swish()
 
     def forward(self, inputs, drop_connect_rate=None):
         """

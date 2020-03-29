@@ -7,6 +7,7 @@ from PIL import Image
 import torch
 from torchvision import transforms
 
+from detectron2.modeling import build_model
 from modeling.backbone.bifpn import build_retinanet_efficientnet_bifpn_backbone
 from tests.parameterized_test_case import parameterizedTestCase
 
@@ -40,6 +41,15 @@ class TestBiFPN(parameterizedTestCase):
     def test_output_shape(self):
         model = build_retinanet_efficientnet_bifpn_backbone(self.cfg)
         print(F"output shape: {model.output_shape()}")
+
+    def test_size_divisibility(self):
+        model = build_retinanet_efficientnet_bifpn_backbone(self.cfg)
+        print(F"size divisibility: {model.size_divisibility}")
+
+    def test_retinanet_predict(self):
+        model = build_model(self.cfg)
+        with open("./output/model.txt", mode="w") as model_file:
+            model_file.write(str(model))
 
 
 def argument_parser():

@@ -3,7 +3,6 @@
 import unittest
 
 from detectron2.config import get_cfg
-from detectron2.data import DatasetCatalog
 from config import add_config
 
 
