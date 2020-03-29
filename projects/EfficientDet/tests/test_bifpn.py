@@ -7,7 +7,7 @@ from PIL import Image
 import torch
 from torchvision import transforms
 
-from modeling.backbone.efficientnet import EfficientNet
+from modeling.backbone.bifpn import build_retinanet_efficientnet_bifpn_backbone
 from tests.parameterized_test_case import parameterizedTestCase
 
 
@@ -23,21 +23,12 @@ def read_image(image_path: str, image_size: tuple):
     return image
 
 
-class TestEfficientNet(parameterizedTestCase):
+class TestBiFPN(parameterizedTestCase):
     def test_create_model(self):
-        model = EfficientNet(self.cfg)
-        check_point_file_path = \
-            R"C:\Users\lijun\.cache\torch\checkpoints\efficientnet-b0-355c32eb.pth"
-        state_dict = torch.load(check_point_file_path)
-        model.load_state_dict(state_dict, strict=False)
+        model = build_retinanet_efficientnet_bifpn_backbone(self.cfg)
 
     def test_predict(self):
-        model = EfficientNet(self.cfg)
-        check_point_file_path = \
-            R"C:\Users\lijun\.cache\torch\checkpoints\efficientnet-b0-355c32eb.pth"
-        state_dict = torch.load(check_point_file_path)
-        model.load_state_dict(state_dict, strict=False)
-        model.eval()
+        model = build_retinanet_efficientnet_bifpn_backbone(self.cfg)
 
         image_path = R"D:\dataset\VOC\VOC2007\JPEGImages\000015.jpg"
         image = read_image(image_path, 512)
@@ -47,7 +38,7 @@ class TestEfficientNet(parameterizedTestCase):
             print(F"{k}, {output_feature.shape}, {torch.sum(output_feature).item()}")
 
     def test_output_shape(self):
-        model = EfficientNet(self.cfg)
+        model = build_retinanet_efficientnet_bifpn_backbone(self.cfg)
         print(F"output shape: {model.output_shape()}")
 
 
@@ -66,7 +57,7 @@ def main():
     config_file_path = args.config_file
     param = {"config_file_path": config_file_path}
     suite = unittest.TestSuite()
-    suite.addTest(parameterizedTestCase.parameterize(TestEfficientNet, param=param))
+    suite.addTest(parameterizedTestCase.parameterize(TestBiFPN, param=param))
     unittest.TextTestRunner().run(suite)
 
 

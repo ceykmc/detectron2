@@ -7,6 +7,8 @@ import torch.nn.functional as F
 
 from detectron2.config import CfgNode
 from detectron2.modeling import Backbone
+from detectron2.layers import ShapeSpec
+
 
 from .utils import (
     MemoryEfficientSwish,
@@ -290,3 +292,11 @@ class EfficientNet(Backbone):
 
     def forward(self, inputs):
         return self.extract_features(inputs)
+
+    def output_shape(self):
+        return {
+            name: ShapeSpec(
+                channels=self._out_feature_channels[name], stride=self._out_feature_strides[name]
+            )
+            for name in self._out_features
+        }

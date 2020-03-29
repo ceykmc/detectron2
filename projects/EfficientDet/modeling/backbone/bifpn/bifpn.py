@@ -5,10 +5,12 @@ from typing import List
 
 import torch.nn as nn
 
+from detectron2.config import CfgNode
 from detectron2.modeling import Backbone
-from detectron2.layers import Conv2d
+from detectron2.layers import Conv2d, ShapeSpec
 
 from .bifpn_module import BiFPNModule
+from ..efficientnet import EfficientNet
 
 
 class BiFPN(Backbone):
@@ -37,9 +39,40 @@ class BiFPN(Backbone):
             for _ in range(bifpn_d)
         ])
 
-        self._out_feature_strides = {"p{}".format(int(math.log2(s))): s for s in in_strides}
+        self.in_features = in_features
+        self._out_feature_strides = {F"p{int(math.log2(s))}": s for s in in_strides}
         self._out_features = list(self._out_feature_strides.keys())
         self._out_feature_channels = {k: bifpn_w for k in self._out_features}
+        self._size_divisibility = in_strides[-1]
+
+    @property
+    def size_divisibility(self):
+        return self._size_divisibility
 
     def forward(self, x):
-        pass
+        bottom_up_features = self.bottom_up(x)
+        results = [lateral_conv(bottom_up_features[f])
+                   for lateral_conv, f in zip(self.lateral_convs, self.in_features)]
+        for bifpn_module in self.bifpn_modules:
+            results = bifpn_module(results)
+        assert len(self._out_features) == len(results)
+        return dict(zip(self._out_features, results))
+
+    def output_shape(self):
+        return {
+            name: ShapeSpec(
+                channels=self._out_feature_channels[name], stride=self._out_feature_strides[name]
+            )
+            for name in self._out_features
+        }
+
+
+def build_retinanet_efficientnet_bifpn_backbone(cfg: CfgNode):
+    bottom_up = EfficientNet(cfg)
+
+    in_features = cfg.MODEL.BIFPN.IN_FEATURES
+    bifpn_w = cfg.MODEL.BIFPN.BIFPN_W
+    bifpn_d = cfg.MODEL.BIFPN.BIFPN_D
+
+    bifpn = BiFPN(bottom_up=bottom_up, in_features=in_features, bifpn_w=bifpn_w, bifpn_d=bifpn_d)
+    return bifpn
