@@ -302,6 +302,6 @@ def build_efficientnet(cfg: CfgNode):
     state_dict = model_zoo.load_url(model_url)
     model.load_state_dict(state_dict, strict=False)
     print("load efficientnet pretrained model")
-    model.freeze_bn()
-    print("fozen batchnorm layers")
+    # model.freeze_bn()
+    # print("fozen batchnorm layers")
     return model
