@@ -4,19 +4,13 @@ import collections
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils import model_zoo
 
 from detectron2.config import CfgNode
-from detectron2.modeling import Backbone
 from detectron2.layers import ShapeSpec
+from detectron2.modeling import Backbone
 
-
-from .utils import (
-    Swish,
-    drop_connect,
-    get_same_padding_conv2d,
-    round_filters,
-    round_repeats,
-)
+from .utils import Swish, drop_connect, get_same_padding_conv2d, round_filters, round_repeats
 
 # Parameters for the entire model (stem, all blocks, and head)
 GlobalParams = collections.namedtuple("GlobalParams", [
@@ -294,3 +288,20 @@ class EfficientNet(Backbone):
             )
             for name in self._out_features
         }
+
+    def freeze_bn(self):
+        for layer in self.modules():
+            if isinstance(layer, nn.BatchNorm2d):
+                layer.eval()
+
+
+def build_efficientnet(cfg: CfgNode):
+    model = EfficientNet(cfg)
+
+    model_url = "http://storage.googleapis.com/public-models/efficientnet/efficientnet-b0-355c32eb.pth"
+    state_dict = model_zoo.load_url(model_url)
+    model.load_state_dict(state_dict, strict=False)
+    print("load efficientnet pretrained model")
+    model.freeze_bn()
+    print("fozen batchnorm layers")
+    return model

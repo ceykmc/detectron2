@@ -8,7 +8,7 @@ from detectron2.config import CfgNode
 from detectron2.layers import Conv2d, ShapeSpec
 from detectron2.modeling import BACKBONE_REGISTRY, Backbone
 
-from ..efficientnet import EfficientNet
+from ..efficientnet import build_efficientnet
 from .bifpn_module import BiFPNModule
 
 
@@ -68,7 +68,7 @@ class BiFPN(Backbone):
 
 @BACKBONE_REGISTRY.register()
 def build_retinanet_efficientnet_bifpn_backbone(cfg: CfgNode, input_shape=None):
-    bottom_up = EfficientNet(cfg)
+    bottom_up = build_efficientnet(cfg)
 
     in_features = cfg.MODEL.BIFPN.IN_FEATURES
     bifpn_w = cfg.MODEL.BIFPN.BIFPN_W
