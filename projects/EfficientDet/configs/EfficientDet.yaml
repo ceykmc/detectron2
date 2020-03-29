@@ -5,7 +5,7 @@ INPUT:
   MIN_SIZE_TRAIN_SAMPLING: "choice"
   MIN_SIZE_TEST: 512
   MAX_SIZE_TEST: 640
-OUTPUT_DIR: ""
+OUTPUT_DIR: "./output"
 DATASETS:
   TRAIN: ("voc_2007_trainval", "voc_2012_trainval")
   TEST: ("voc_2007_test",)
@@ -24,7 +24,7 @@ MODEL:
 SOLVER:
   IMS_PER_BATCH: 2
   BASE_LR: 0.01
-  STEPS: (12000, 16000)
-  MAX_ITER: 18000  # 17.4 epochs
-  WARMUP_ITERS: 100
+  STEPS: (15000, 25000)
+  MAX_ITER: 36000  # 17.4 epochs
+  WARMUP_ITERS: 1000
 VERSION: 2
