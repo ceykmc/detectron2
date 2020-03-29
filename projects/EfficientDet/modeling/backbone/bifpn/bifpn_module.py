@@ -99,20 +99,3 @@ class BiFPNModule(nn.Module):
         inputs[self.levels - 1] = self.convs[count](inputs[self.levels - 1])
         assert count == len(self.convs) - 1, "not all conv module are used"
         return inputs
-
-
-def main():
-    model = BiFPNModule(levels=5, channels=32)
-
-    inputs = [torch.randn(4, 32, 64, 64),
-              torch.randn(4, 32, 32, 32),
-              torch.randn(4, 32, 16, 16),
-              torch.randn(4, 32, 8, 8),
-              torch.randn(4, 32, 4, 4)]
-    outputs = model(inputs)
-    for i, output in enumerate(outputs):
-        print(i, output.size())
-
-
-if __name__ == "__main__":
-    main()

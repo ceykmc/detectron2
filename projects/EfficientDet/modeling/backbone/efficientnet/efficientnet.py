@@ -48,6 +48,7 @@ class MBConvBlock(nn.Module):
     Attributes:
         has_se (bool): Whether the block contains a Squeeze and Excitation layer.
     """
+
     def __init__(self, block_args, global_params):
         super().__init__()
         self._block_args = block_args
@@ -90,8 +91,8 @@ class MBConvBlock(nn.Module):
         if self.has_se:
             num_squeezed_channels = max(
                 1,
-                int(self._block_args.input_filters *
-                    self._block_args.se_ratio))
+                int(self._block_args.input_filters
+                    * self._block_args.se_ratio))
             self._se_reduce = Conv2d(in_channels=oup,
                                      out_channels=num_squeezed_channels,
                                      kernel_size=1)
@@ -218,13 +219,7 @@ class EfficientNet(Backbone):
                 self._out_feature_channels[name] = block_args.output_filters
                 count += 1
 
-        self._swish = MemoryEfficientSwish()
-
-    def set_swish(self, memory_efficient=True):
-        """Sets swish function as memory efficient (for training) or standard (for export)"""
-        self._swish = MemoryEfficientSwish() if memory_efficient else Swish()
-        for block in self._blocks:
-            block.set_swish(memory_efficient)
+        self._swish = Swish()
 
     def extract_features(self, inputs):
         outputs = dict()

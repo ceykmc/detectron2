@@ -2,15 +2,14 @@
 
 import math
 from typing import List
-
 import torch.nn as nn
 
 from detectron2.config import CfgNode
-from detectron2.modeling import Backbone
 from detectron2.layers import Conv2d, ShapeSpec
+from detectron2.modeling import BACKBONE_REGISTRY, Backbone
 
-from .bifpn_module import BiFPNModule
 from ..efficientnet import EfficientNet
+from .bifpn_module import BiFPNModule
 
 
 class BiFPN(Backbone):
@@ -67,6 +66,7 @@ class BiFPN(Backbone):
         }
 
 
+@BACKBONE_REGISTRY.register()
 def build_retinanet_efficientnet_bifpn_backbone(cfg: CfgNode):
     bottom_up = EfficientNet(cfg)
 
