@@ -10,7 +10,7 @@ DATASETS:
   TRAIN: ("voc_2007_trainval", "voc_2012_trainval")
   TEST: ("voc_2007_test",)
 MODEL:
-  WEIGHTS: "./output/model_0029999.pth"
+  WEIGHTS: ""
   META_ARCHITECTURE: "RetinaNet"
   BACKBONE:
     NAME: "build_retinanet_efficientnet_bifpn_backbone"
