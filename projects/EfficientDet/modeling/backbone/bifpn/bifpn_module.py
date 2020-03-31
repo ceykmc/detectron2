@@ -45,7 +45,8 @@ class FastNormalizedFusion(nn.Module):
             F.max_pool2d(down_level_feature, kernel_size=2)
         return a + b + c
 
-    def bottom_up_process_top_level(self, level: int, down_level_feature: torch.Tensor,
+    def bottom_up_process_top_level(self, level: int,
+                                    down_level_feature: torch.Tensor,
                                     current_level_feature: torch.Tensor):
         a = self.top_down_weights[level, 0] * current_level_feature
         b = self.top_down_weights[level, 1] * \
@@ -69,7 +70,9 @@ class BiFPNModule(nn.Module):
                        stride=1,
                        padding=1,
                        groups=channels,
-                       norm=nn.BatchNorm2d(num_features=channels),
+                       norm=nn.BatchNorm2d(num_features=channels,
+                                           eps=1e-4,
+                                           momentum=0.003),
                        activation=nn.ReLU(inplace=True)))
 
     def forward(self, inputs):

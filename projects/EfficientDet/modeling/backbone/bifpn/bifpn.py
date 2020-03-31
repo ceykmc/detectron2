@@ -30,7 +30,9 @@ class BiFPN(Backbone):
                                   kernel_size=3,
                                   stride=1,
                                   padding=1,
-                                  norm=nn.BatchNorm2d(num_features=bifpn_w),
+                                  norm=nn.BatchNorm2d(num_features=bifpn_w,
+                                                      eps=1e-4,
+                                                      momentum=0.003),
                                   activation=nn.ReLU(inplace=True))
             self.lateral_convs.append(lateral_conv)
         self.bifpn_modules = nn.ModuleList([
@@ -39,7 +41,10 @@ class BiFPN(Backbone):
         ])
 
         self.in_features = in_features
-        self._out_feature_strides = {F"p{int(math.log2(s))}": s for s in in_strides}
+        self._out_feature_strides = {
+            F"p{int(math.log2(s))}": s
+            for s in in_strides
+        }
         self._out_features = list(self._out_feature_strides.keys())
         self._out_feature_channels = {k: bifpn_w for k in self._out_features}
         self._size_divisibility = in_strides[-1]
@@ -50,8 +55,10 @@ class BiFPN(Backbone):
 
     def forward(self, x):
         bottom_up_features = self.bottom_up(x)
-        results = [lateral_conv(bottom_up_features[f])
-                   for lateral_conv, f in zip(self.lateral_convs, self.in_features)]
+        results = [
+            lateral_conv(bottom_up_features[f])
+            for lateral_conv, f in zip(self.lateral_convs, self.in_features)
+        ]
         for bifpn_module in self.bifpn_modules:
             results = bifpn_module(results)
         assert len(self._out_features) == len(results)
@@ -59,20 +66,23 @@ class BiFPN(Backbone):
 
     def output_shape(self):
         return {
-            name: ShapeSpec(
-                channels=self._out_feature_channels[name], stride=self._out_feature_strides[name]
-            )
+            name: ShapeSpec(channels=self._out_feature_channels[name],
+                            stride=self._out_feature_strides[name])
             for name in self._out_features
         }
 
 
 @BACKBONE_REGISTRY.register()
-def build_retinanet_efficientnet_bifpn_backbone(cfg: CfgNode, input_shape=None):
+def build_retinanet_efficientnet_bifpn_backbone(cfg: CfgNode,
+                                                input_shape=None):
     bottom_up = build_efficientnet(cfg)
 
     in_features = cfg.MODEL.BIFPN.IN_FEATURES
     bifpn_w = cfg.MODEL.BIFPN.BIFPN_W
     bifpn_d = cfg.MODEL.BIFPN.BIFPN_D
 
-    bifpn = BiFPN(bottom_up=bottom_up, in_features=in_features, bifpn_w=bifpn_w, bifpn_d=bifpn_d)
+    bifpn = BiFPN(bottom_up=bottom_up,
+                  in_features=in_features,
+                  bifpn_w=bifpn_w,
+                  bifpn_d=bifpn_d)
     return bifpn
