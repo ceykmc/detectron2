@@ -34,3 +34,7 @@ def add_config(cfg: CN):
     _C.MODEL.BIFPN.IN_FEATURES = ["res4", "res7", "res10", "res14", "res15"]
     _C.MODEL.BIFPN.BIFPN_W = 64
     _C.MODEL.BIFPN.BIFPN_D = 3
+
+    _C.SOLVER.EMA = CN()
+    _C.SOLVER.EMA.DECAY = 0.9998
+    _C.SOLVER.EMA.PERIOD = 300
