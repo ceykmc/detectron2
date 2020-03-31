@@ -69,7 +69,7 @@ class BiFPNModule(nn.Module):
                        kernel_size=3,
                        stride=1,
                        padding=1,
-                       groups=channels,
+                       groups=1,
                        norm=nn.BatchNorm2d(num_features=channels,
                                            eps=1e-4,
                                            momentum=0.003),
