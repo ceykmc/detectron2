@@ -27,14 +27,12 @@ class EMA(HookBase):
         return super().before_step()
 
     def after_step(self):
-        if (self.trainer.iter + 1) % self.period == 0 or \
-                self.trainer.iter >= self.trainer.max_iter - 1:
-            for name, param in self.model.named_parameters():
-                if param.requires_grad:
-                    assert name in self.shadow
-                    new_average = \
-                        (1.0 - self.decay) * param.data + self.decay * self.shadow[name]
-                    self.shadow[name] = new_average.clone()
+        for name, param in self.model.named_parameters():
+            if param.requires_grad:
+                assert name in self.shadow
+                new_average = \
+                    (1.0 - self.decay) * param.data + self.decay * self.shadow[name]
+                self.shadow[name] = new_average.clone()
         if self.trainer.iter >= self.trainer.max_iter - 1:
             for name, param in self.model.named_parameters():
                 if param.requires_grad:
