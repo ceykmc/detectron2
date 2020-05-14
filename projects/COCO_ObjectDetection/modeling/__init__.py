@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .build import build_model
+from .backbone import build_retinanet_shufflenetv2_fpn_backbone
 
-__all__ = ["build_model"]
+__all__ = ["build_retinanet_shufflenetv2_fpn_backbone"]
